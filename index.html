@@ -39,6 +39,12 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        /* Ensure the table cell is centered */
+        .station-image-cell {
+            text-align: center; /* Horizontally centers content */
+            vertical-align: middle; /* Vertically centers content */
+            width: 150px; /* Optional: sets a consistent column width */
+        }
         .modal-image {
             max-width: 100%;
             max-height: 500px;
@@ -294,7 +300,7 @@
                     <td>${station.TrainLine || ''}</td>
                     <td>${station.StationJA || ''}</td>
                     <td>${station.StationEN || ''}</td>
-                    <td>${station.imgurURL2 ? 
+                    <td class="station-image-cell">${station.imgurURL2 ? 
                         `<img src="${station.imgurURL2}" alt="${station.StationEN}" class="station-image">` : 
                         ''}
                     </td>
