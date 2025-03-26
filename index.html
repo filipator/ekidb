@@ -16,16 +16,16 @@
         }
         /* Fixed column widths */
         .table th:nth-child(1) {
-            width: 20%;
+            width: 25%;
         }
         .table th:nth-child(2) {
-            width: 20%;
+            width: 25%;
         }
         .table th:nth-child(3) {
-            width: 20%;
+            width: 25%;
         }
         .table th:nth-child(4) {
-            width: 40%;
+            width: 25%;
         }
         .table td {
             white-space: nowrap;
@@ -33,8 +33,8 @@
             text-overflow: ellipsis;
         }
         .station-image {
-            width: 150px;
-            height: 150px;
+            width: 100px;
+            height: 100px;
             object-fit: cover;
             border-radius: 4px;
             cursor: pointer;
@@ -43,7 +43,7 @@
         .station-image-cell {
             text-align: center; /* Horizontally centers content */
             vertical-align: middle; /* Vertically centers content */
-            width: 150px; /* Optional: sets a consistent column width */
+            width: 100px; /* Optional: sets a consistent column width */
         }
         .modal-image {
             max-width: 100%;
@@ -67,7 +67,7 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="my-4">Eki Stamps Directory</h1>
+        <!-- <h1 class="my-4">Eki Stamps Directory</h1> -->
         
         <div class="row search-container">
             <div class="col-md-6 mb-3">
@@ -84,10 +84,10 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th data-sort="TrainLine">Train Line <span class="sort-icon"></span></th>
-                        <th data-sort="StationJA">Station (Japanese) <span class="sort-icon"></span></th>
+                        <th>Stamp</th>
                         <th data-sort="StationEN">Station (English) <span class="sort-icon"></span></th>
-                        <th>Image</th>
+                        <th data-sort="StationJA">Station (Japanese) <span class="sort-icon"></span></th>
+                        <th data-sort="TrainLine">Train Line <span class="sort-icon"></span></th>
                     </tr>
                 </thead>
                 <tbody id="stationTableBody">
@@ -297,13 +297,13 @@
             currentItems.forEach(station => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${station.TrainLine || ''}</td>
-                    <td>${station.StationJA || ''}</td>
-                    <td>${station.StationEN || ''}</td>
                     <td class="station-image-cell">${station.imgurURL2 ? 
                         `<img src="${station.imgurURL2}" alt="${station.StationEN}" class="station-image">` : 
                         ''}
                     </td>
+                    <td>${station.StationEN || ''}</td>
+                    <td>${station.StationJA || ''}</td>
+                    <td>${station.TrainLine || ''}</td>                    
                 `;
                 
                 // Add click event to show modal
