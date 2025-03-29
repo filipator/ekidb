@@ -7,7 +7,7 @@ export default function StationTable() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
   const [filterConfig, setFilterConfig] = useState({
@@ -244,10 +244,10 @@ export default function StationTable() {
             }}
             className="border border-gray-300 rounded-md p-1"
           >
+            <option value={5}>5</option>
             <option value={10}>10</option>
-            <option value={25}>25</option>
+            <option value={20}>20</option>
             <option value={50}>50</option>
-            <option value={100}>100</option>
           </select>
         </div>
         
