@@ -17,7 +17,6 @@
         /* Fixed column widths */
         .table th:nth-child(1) {
             width: 25%;
-            text-align: center;
         }
         .table th:nth-child(2) {
             width: 25%;
@@ -32,7 +31,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            text-wrap: pretty;
             vertical-align: middle;
         }
         .station-image {
@@ -77,10 +75,14 @@
                 <label for="search" class="form-label">Search:</label>
                 <input type="text" id="search" class="form-control" placeholder="Search any field...">
             </div>
+            <div class="col-md-6 mb-3">
+                <label for="trainLineFilter" class="form-label">Filter by Train Line:</label>
+                <input type="text" id="trainLineFilter" class="form-control" placeholder="Enter train line...">
+            </div>
         </div>
         
         <div class="table-container">
-            <table class="table table-hover">
+            <table class="table table-striped table-hover">
                 <thead>
                     <tr>
                         <th>Stamp</th>
@@ -100,10 +102,10 @@
                 <div class="items-per-page">
                     <label for="itemsPerPage" class="form-label">Items per page:</label>
                     <select id="itemsPerPage" class="form-select form-select-sm" style="width: auto; display: inline-block;">
-                        <option value="5">5</option>
                         <option value="10">10</option>
-                        <option value="20">20</option>
+                        <option value="25">25</option>
                         <option value="50">50</option>
+                        <option value="100">100</option>
                     </select>
                 </div>
             </div>
@@ -130,18 +132,17 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Station Details</h5>
+                    <h4 id="modalStationEN"></h4>
+                    &emsp;&emsp;
+                    <h4 id="modalStationJA"></h4>
+                    &emsp;&emsp;
+                    <h4 id="modalTrainLine"></h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <h4 id="modalStationEN"></h4>
-                            <h5 id="modalStationJA"></h5>
-                            <p><strong>Train Line:</strong> <span id="modalTrainLine"></span></p>
-                        </div>
                         <div class="col-md-6 text-center">
-                            <img id="modalImage" src="" alt="Station Image" class="modal-image">
+                            <img id="modalImage" src="" class="modal-image">
                         </div>
                     </div>
                 </div>
@@ -156,7 +157,7 @@
         let stationData = [];
         let filteredData = [];
         let currentPage = 1;
-        let itemsPerPage = 5;
+        let itemsPerPage = 10;
         let sortColumn = null;
         let sortDirection = 'asc';
         
@@ -183,6 +184,11 @@
         function setupEventListeners() {
             // Search input
             document.getElementById('search').addEventListener('input', function() {
+                filterData();
+            });
+            
+            // Train line filter
+            document.getElementById('trainLineFilter').addEventListener('input', function() {
                 filterData();
             });
             
@@ -239,6 +245,7 @@
         // Filter data based on search and filter inputs
         function filterData() {
             const searchTerm = document.getElementById('search').value.toLowerCase();
+            const trainLineFilter = document.getElementById('trainLineFilter').value.toLowerCase();
             
             filteredData = stationData.filter(station => {
                 // Search in all fields
@@ -246,7 +253,11 @@
                     value && value.toLowerCase().includes(searchTerm)
                 );
                 
-                return searchMatch;
+                // Train line filter
+                const trainLineMatch = !trainLineFilter || 
+                    (station.TrainLine && station.TrainLine.toLowerCase().includes(trainLineFilter));
+                
+                return searchMatch && trainLineMatch;
             });
             
             currentPage = 1;
@@ -328,7 +339,7 @@
             const modalImage = document.getElementById('modalImage');
             if (station.imgurURL2) {
                 modalImage.src = station.imgurURL2;
-                modalImage.alt = station.StationEN || '';
+                //modalImage.alt = station.StationEN || '';
                 modalImage.style.display = 'block';
             } else {
                 modalImage.style.display = 'none';
