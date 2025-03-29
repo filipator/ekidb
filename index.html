@@ -186,11 +186,6 @@
                 filterData();
             });
             
-            // Train line filter
-            document.getElementById('trainLineFilter').addEventListener('input', function() {
-                filterData();
-            });
-            
             // Items per page
             document.getElementById('itemsPerPage').addEventListener('change', function() {
                 itemsPerPage = parseInt(this.value);
@@ -244,7 +239,6 @@
         // Filter data based on search and filter inputs
         function filterData() {
             const searchTerm = document.getElementById('search').value.toLowerCase();
-            const trainLineFilter = document.getElementById('trainLineFilter').value.toLowerCase();
             
             filteredData = stationData.filter(station => {
                 // Search in all fields
@@ -252,11 +246,7 @@
                     value && value.toLowerCase().includes(searchTerm)
                 );
                 
-                // Train line filter
-                const trainLineMatch = !trainLineFilter || 
-                    (station.TrainLine && station.TrainLine.toLowerCase().includes(trainLineFilter));
-                
-                return searchMatch && trainLineMatch;
+                return searchMatch;
             });
             
             currentPage = 1;
