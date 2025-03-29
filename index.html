@@ -77,10 +77,6 @@
                 <label for="search" class="form-label">Search:</label>
                 <input type="text" id="search" class="form-control" placeholder="Search any field...">
             </div>
-            <div class="col-md-6 mb-3">
-                <label for="trainLineFilter" class="form-label">Filter by Train Line:</label>
-                <input type="text" id="trainLineFilter" class="form-control" placeholder="Enter train line...">
-            </div>
         </div>
         
         <div class="table-container">
@@ -104,10 +100,10 @@
                 <div class="items-per-page">
                     <label for="itemsPerPage" class="form-label">Items per page:</label>
                     <select id="itemsPerPage" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                        <option value="5">5</option>
                         <option value="10">10</option>
-                        <option value="25">25</option>
+                        <option value="20">20</option>
                         <option value="50">50</option>
-                        <option value="100">100</option>
                     </select>
                 </div>
             </div>
@@ -160,7 +156,7 @@
         let stationData = [];
         let filteredData = [];
         let currentPage = 1;
-        let itemsPerPage = 10;
+        let itemsPerPage = 5;
         let sortColumn = null;
         let sortDirection = 'asc';
         
