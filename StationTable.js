@@ -1,6 +1,5 @@
-// Modified StationTable.js with filter removed, pagination relocated, and centered modal
-
 'use client';
+
 import { useState, useEffect } from 'react';
 import ImageComponent from './ImageComponent';
 
@@ -11,7 +10,9 @@ export default function StationTable() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
-  // Removed filterConfig state since we're removing the Train Line filter
+  const [filterConfig, setFilterConfig] = useState({
+    TrainLine: ''
+  });
   const [selectedStation, setSelectedStation] = useState(null);
 
   // Fetch data
@@ -20,22 +21,25 @@ export default function StationTable() {
       try {
         const response = await fetch('/data.csv');
         const csvText = await response.text();
-
+        
         // Parse CSV
         const lines = csvText.split('\n');
         const headers = lines[0].split(',');
+        
         const parsedData = [];
-
         for (let i = 1; i < lines.length; i++) {
           if (!lines[i]) continue;
+          
           const values = lines[i].split(',');
           const entry = {};
+          
           headers.forEach((header, index) => {
             entry[header] = values[index];
           });
+          
           parsedData.push(entry);
         }
-
+        
         setData(parsedData);
         setLoading(false);
       } catch (error) {
@@ -43,26 +47,31 @@ export default function StationTable() {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, []);
 
-  // Filter data - removed trainLineMatch since we're removing the filter
+  // Filter data
   const filteredData = data.filter(item => {
     // Search filter
     const searchMatch = Object.values(item).some(
       value => value && value.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
-    return searchMatch;
+    // Column filters
+    const trainLineMatch = !filterConfig.TrainLine || 
+      item.TrainLine.toLowerCase().includes(filterConfig.TrainLine.toLowerCase());
+    
+    return searchMatch && trainLineMatch;
   });
 
   // Sort data
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortConfig.key) return 0;
+    
     const aValue = a[sortConfig.key];
     const bValue = b[sortConfig.key];
-
+    
     if (aValue < bValue) {
       return sortConfig.direction === 'ascending' ? -1 : 1;
     }
@@ -85,6 +94,15 @@ export default function StationTable() {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
+  };
+
+  // Handle filter change
+  const handleFilterChange = (column, value) => {
+    setFilterConfig(prev => ({
+      ...prev,
+      [column]: value
+    }));
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   // Handle search
@@ -112,12 +130,12 @@ export default function StationTable() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-black">Eki Stamps Directory</h1>
+      <h1 className="text-2xl font-bold mb-6 text-black">Train Stations Directory</h1>
       
-      {/* Search and Pagination - moved pagination to top */}
+      {/* Search and filters */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-black mb-1">Search:</label>
+          <label className="block text-sm font-medium text-black mb-1">Search</label>
           <input
             type="text"
             value={searchTerm}
@@ -127,43 +145,15 @@ export default function StationTable() {
           />
         </div>
         
-        {/* Pagination moved to top where filter was */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <label className="mr-2 text-sm text-black">Items per page:</label>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="border border-gray-300 rounded-md p-1"
-            >
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
-          <div className="flex items-center">
-            <button
-              onClick={() => paginate(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="px-2 py-1 border border-gray-300 rounded-md mr-1 disabled:opacity-50 text-black text-sm"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-black mx-1">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="px-2 py-1 border border-gray-300 rounded-md ml-1 disabled:opacity-50 text-black text-sm"
-            >
-              Next
-            </button>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-black mb-1">Filter by Train Line</label>
+          <input
+            type="text"
+            value={filterConfig.TrainLine}
+            onChange={(e) => handleFilterChange('TrainLine', e.target.value)}
+            placeholder="Enter train line..."
+            className="w-full p-2 border border-gray-300 rounded-md"
+          />
         </div>
       </div>
       
@@ -178,29 +168,7 @@ export default function StationTable() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer"
-                onClick={() => requestSort('StationEN')}
-              >
-                Station (English)
-                {sortConfig.key === 'StationEN' && (
-                  <span className="ml-1">
-                    {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                  </span>
-                )}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer"
-                onClick={() => requestSort('StationJA')}
-              >
-                Station (Japanese)
-                {sortConfig.key === 'StationJA' && (
-                  <span className="ml-1">
-                    {sortConfig.direction === 'ascending' ? '↑' : '↓'}
-                  </span>
-                )}
-              </th>
-              <th
+              <th 
                 className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer"
                 onClick={() => requestSort('TrainLine')}
               >
@@ -211,25 +179,47 @@ export default function StationTable() {
                   </span>
                 )}
               </th>
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer"
+                onClick={() => requestSort('StationJA')}
+              >
+                Station (Japanese)
+                {sortConfig.key === 'StationJA' && (
+                  <span className="ml-1">
+                    {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                  </span>
+                )}
+              </th>
+              <th 
+                className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer"
+                onClick={() => requestSort('StationEN')}
+              >
+                Station (English)
+                {sortConfig.key === 'StationEN' && (
+                  <span className="ml-1">
+                    {sortConfig.direction === 'ascending' ? '↑' : '↓'}
+                  </span>
+                )}
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">
-                Stamp
+                Image
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {currentItems.map((station, index) => (
-              <tr
-                key={index}
+              <tr 
+                key={index} 
                 className="hover:bg-gray-100 cursor-pointer"
                 onClick={() => handleRowClick(station)}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-black">{station.StationEN}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-black">{station.StationJA}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-black">{station.TrainLine}</td>
-                <td className="px-6 py-4 whitespace-nowrap station-image-cell">
+                <td className="px-6 py-4 whitespace-nowrap text-black">{station.StationJA}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-black">{station.StationEN}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
                   {station.imgurURL2 && (
-                    <ImageComponent
-                      src={station.imgurURL2}
+                    <ImageComponent 
+                      src={station.imgurURL2} 
                       alt={station.StationEN}
                       width={150}
                       height={150}
@@ -242,31 +232,77 @@ export default function StationTable() {
         </table>
       </div>
       
-      {/* Modal for image popup - centered on page */}
+      {/* Pagination */}
+      <div className="mt-6 flex flex-col sm:flex-row items-center justify-between">
+        <div className="mb-4 sm:mb-0">
+          <label className="mr-2 text-sm text-black">Items per page:</label>
+          <select 
+            value={itemsPerPage} 
+            onChange={(e) => {
+              setItemsPerPage(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="border border-gray-300 rounded-md p-1"
+          >
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+        
+        <div className="flex items-center">
+          <button 
+            onClick={() => paginate(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1 border border-gray-300 rounded-md mr-2 disabled:opacity-50 text-black"
+          >
+            Previous
+          </button>
+          
+          <span className="text-sm text-black mx-2">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button 
+            onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 border border-gray-300 rounded-md ml-2 disabled:opacity-50 text-black"
+          >
+            Next
+          </button>
+        </div>
+      </div>
+      
+      {/* Modal for image popup */}
       {selectedStation && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-black">
-                {selectedStation.StationEN} ({selectedStation.StationJA})
-              </h2>
-              <button
-                onClick={closeModal}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="flex flex-col items-center">
-              {selectedStation.imgurURL2 && (
-                <img
-                  src={selectedStation.imgurURL2}
-                  alt={selectedStation.StationEN}
-                  className="modal-image mb-4"
-                />
-              )}
-              <div className="text-black">
-                <p><strong>Train Line:</strong> {selectedStation.TrainLine}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-3xl w-full p-6 relative">
+            <button 
+              onClick={closeModal}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <h2 className="text-xl font-bold mb-2 text-black">{selectedStation.StationEN}</h2>
+            <h3 className="text-lg mb-4 text-black">{selectedStation.StationJA}</h3>
+            
+            <div className="flex flex-col md:flex-row">
+              <div className="md:w-1/2 mb-4 md:mb-0 md:pr-4">
+                <p className="text-black"><strong>Train Line:</strong> {selectedStation.TrainLine}</p>
+              </div>
+              
+              <div className="md:w-1/2 flex justify-center">
+                {selectedStation.imgurURL2 && (
+                  <img 
+                    src={selectedStation.imgurURL2} 
+                    alt={selectedStation.StationEN}
+                    className="max-w-full max-h-[500px] object-contain rounded-md"
+                  />
+                )}
               </div>
             </div>
           </div>
