@@ -9,24 +9,18 @@
         body {
             font-family: Arial, sans-serif;
             color: black; /* Changed from light gray to black as requested */
-            padding: 20px;
+            padding: 10px;
         }
         .table-container {
             overflow-x: auto;
         }
         /* Fixed column widths */
         .table th:nth-child(1) {
-            width: 25%;
+            width: 35%;
             text-align: center;
         }
         .table th:nth-child(2) {
-            width: 25%;
-        }
-        .table th:nth-child(3) {
-            width: 25%;
-        }
-        .table th:nth-child(4) {
-            width: 25%;
+            width: 65%;
         }
         .table td {
             white-space: nowrap;
@@ -53,11 +47,11 @@
             object-fit: contain;
         }
         .pagination {
-            margin-top: 20px;
+            margin-top: 10px;
             justify-content: center;
         }
         .search-container {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
         th {
             cursor: pointer;
@@ -71,32 +65,16 @@
     <div class="container">
         <!-- <h1 class="my-4">Eki Stamps Directory</h1> -->
         
-        <div class="row search-container">
+        <!-- <div class="row search-container">
             <div class="col-md-6 mb-3">
                 <input type="text" id="search" class="form-control" placeholder="Search any field...">
             </div>
-        </div>
-        
-        <div class="table-container">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Stamp</th>
-                        <th data-sort="StationEN">Station (English) <span class="sort-icon"></span></th>
-                        <th data-sort="StationJA">Station (Japanese) <span class="sort-icon"></span></th>
-                        <th data-sort="TrainLine">Train Line <span class="sort-icon"></span></th>
-                    </tr>
-                </thead>
-                <tbody id="stationTableBody">
-                    <!-- Table data will be populated here -->
-                </tbody>
-            </table>
-        </div>
-        
+        </div> -->
+                
         <div class="row align-items-center">
             <div class="col-md-4">
                 <div class="items-per-page">
-                    <label for="itemsPerPage" class="form-label">Items per page:</label>
+                    <label for="itemsPerPage" class="form-label">page size:</label>
                     <select id="itemsPerPage" class="form-select form-select-sm" style="width: auto; display: inline-block;">
                         <option value="5">5</option>
                         <option value="10">10</option>
@@ -120,6 +98,23 @@
                     </ul>
                 </nav>
             </div>
+            <div class="col-md-6 mb-3">
+                <input type="text" id="search" class="form-control" placeholder="Search any field...">
+            </div>
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Stamp</th>
+                            <th data-sort="Station">Station (English) <span class="sort-icon"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="stationTableBody">
+                        <!-- Table data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+    
         </div>
     </div>
     
@@ -287,9 +282,7 @@
                         `<img src="${station.imgurURL2}" alt="${station.StationEN}" class="station-image">` : 
                         ''}
                     </td>
-                    <td>${station.StationEN || ''}</td>
-                    <td>${station.StationJA || ''}</td>
-                    <td>${station.TrainLine || ''}</td>                    
+                    <td>${station.StationEN + '<br/>' + station.StationJA + '<br/>' + station.TrainLine}</td>
                 `;
                 
                 // Add click event to show modal
