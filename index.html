@@ -17,6 +17,7 @@
         /* Fixed column widths */
         .table th:nth-child(1) {
             width: 25%;
+            text-align: center;
         }
         .table th:nth-child(2) {
             width: 25%;
@@ -98,10 +99,10 @@
                 <div class="items-per-page">
                     <label for="itemsPerPage" class="form-label">Items per page:</label>
                     <select id="itemsPerPage" class="form-select form-select-sm" style="width: auto; display: inline-block;">
+                        <option value="5">5</option>
                         <option value="10">10</option>
-                        <option value="25">25</option>
+                        <option value="20">20</option>
                         <option value="50">50</option>
-                        <option value="100">100</option>
                     </select>
                 </div>
             </div>
@@ -153,7 +154,7 @@
         let stationData = [];
         let filteredData = [];
         let currentPage = 1;
-        let itemsPerPage = 10;
+        let itemsPerPage = 5;
         let sortColumn = null;
         let sortDirection = 'asc';
         
