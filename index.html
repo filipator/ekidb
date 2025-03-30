@@ -75,14 +75,10 @@
                 <label for="search" class="form-label">Search:</label>
                 <input type="text" id="search" class="form-control" placeholder="Search any field...">
             </div>
-            <div class="col-md-6 mb-3">
-                <label for="trainLineFilter" class="form-label">Filter by Train Line:</label>
-                <input type="text" id="trainLineFilter" class="form-control" placeholder="Enter train line...">
-            </div>
         </div>
         
         <div class="table-container">
-            <table class="table table-striped table-hover">
+            <table class="table table-hover">
                 <thead>
                     <tr>
                         <th>Stamp</th>
@@ -186,12 +182,7 @@
             document.getElementById('search').addEventListener('input', function() {
                 filterData();
             });
-            
-            // Train line filter
-            document.getElementById('trainLineFilter').addEventListener('input', function() {
-                filterData();
-            });
-            
+                      
             // Items per page
             document.getElementById('itemsPerPage').addEventListener('change', function() {
                 itemsPerPage = parseInt(this.value);
@@ -245,19 +236,14 @@
         // Filter data based on search and filter inputs
         function filterData() {
             const searchTerm = document.getElementById('search').value.toLowerCase();
-            const trainLineFilter = document.getElementById('trainLineFilter').value.toLowerCase();
             
             filteredData = stationData.filter(station => {
                 // Search in all fields
                 const searchMatch = Object.values(station).some(value => 
                     value && value.toLowerCase().includes(searchTerm)
                 );
-                
-                // Train line filter
-                const trainLineMatch = !trainLineFilter || 
-                    (station.TrainLine && station.TrainLine.toLowerCase().includes(trainLineFilter));
-                
-                return searchMatch && trainLineMatch;
+                                
+                return searchMatch;
             });
             
             currentPage = 1;
