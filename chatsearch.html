@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Station Search Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        #chat-container {
+            height: 70vh;
+            overflow-y: auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background: #e3f2fd;
+            margin-left: 20%;
+        }
+
+        .bot-message {
+            background: #f5f5f5;
+            margin-right: 20%;
+        }
+
+        #input-container {
+            position: relative;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        #suggestions {
+            position: absolute;
+            bottom: 100%;
+            width: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: #f5f5f5;
+        }
+
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .result-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .station-info {
+            flex: 1;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            padding-top: 60px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container"></div>
+    <div id="input-container">
+        <div id="suggestions"></div>
+        <input type="text" id="search-input" placeholder="Search stations... (e.g. 'Fukuchiyama', 'Maizuru Line')">
+    </div>
+
+    <!-- Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        let csvData = [];
+        const suggestions = [
+            "Show Fukuchiyama Line stations",
+            "Find Sanin Line stations",
+            "Search by Japanese station name",
+            "Search by English station name",
+            "Show all stations"
+        ];
+
+        const chatContainer = document.getElementById('chat-container');
+        const searchInput = document.getElementById('search-input');
+        const suggestionsDiv = document.getElementById('suggestions');
+
+        async function loadCSV() {
+            const response = await fetch('data.csv');
+            const text = await response.text();
+            
+            Papa.parse(text, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    csvData = results.data.filter((item, index) => {
+                        if (!item.StationJA || !item.StationEN) {
+                            console.warn('Missing data in row:', index + 1, item);
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+            });
+
+        }
+
+        function showSuggestions() {
+            suggestionsDiv.innerHTML = suggestions.map(s => 
+                `<div class="suggestion-item" onclick="handleSuggestion('${s}')">${s}</div>`
+            ).join('');
+            suggestionsDiv.style.display = 'block';
+        }
+
+        function handleSuggestion(text) {
+            searchInput.value = text;
+            performSearch(text);
+            suggestionsDiv.style.display = 'none';
+        }
+
+        function performSearch(query) {
+            addMessage(query, 'user');
+            
+            const keywords = query.toLowerCase().split(' ');
+            const results = csvData.filter(item => {
+                // Handle missing values safely
+                const stationJA = item.StationJA ? item.StationJA.toLowerCase() : '';
+                const stationEN = item.StationEN ? item.StationEN.toLowerCase() : '';
+                const trainLine = item.TrainLine ? item.TrainLine.toLowerCase() : '';
+                const district = item.District ? item.District.toLowerCase() : '';
+
+                return keywords.some(keyword => 
+                    stationJA.includes(keyword) ||
+                    stationEN.includes(keyword) ||
+                    trainLine.includes(keyword) ||
+                    district.includes(keyword)
+                );
+            });
+
+            displayResults(results);
+            showSuggestions();
+        }
+
+        function displayResults(results) {
+            const html = results.map(item => `
+                <div class="result-item">
+                    <img src="${item.imgurURL2}" 
+                         class="result-image" 
+                         alt="${item.StationEN}"
+                         onclick="showModal('${item.imgurURL2}')">
+                    <div class="station-info">
+                        <h3>${item.StationJA} (${item.StationEN})</h3>
+                        <p>Line: ${item.TrainLine}</p>
+                        <p>District: ${item.District}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            addMessage(html, 'bot');
+        }
+
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.innerHTML = content;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Modal functions
+        function showModal(imgUrl) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = "block";
+            modalImg.src = imgUrl;
+        }
+
+        // Close modal
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal') || e.target.classList.contains('close')) {
+                this.style.display = "none";
+            }
+        });
+
+        // Event listeners
+        searchInput.addEventListener('focus', showSuggestions);
+        searchInput.addEventListener('input', showSuggestions);
+        
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(searchInput.value);
+                searchInput.value = '';
+            }
+        });
+
+        // Initial load
+        loadCSV();
+        showSuggestions();
+    </script>
+</body>
+</html>
